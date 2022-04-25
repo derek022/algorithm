@@ -26,6 +26,7 @@ struct TubesState
 	bool IsTubeFull(int tube);
 	bool IsSameTop(int f, int t);
 	bool IsTubeComplete(int tube);
+	bool IsAllSameBall(int tube);
 	int GetTopBallValue(int tube);
 	int GetTopBallIndex(int tube);
 	void PrintStates();

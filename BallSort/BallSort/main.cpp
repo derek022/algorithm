@@ -80,18 +80,33 @@ bool SearchState(std::deque<TubesState>& states)
         return true;
     }
 
-
-    for (int to = 0; to < TUBES_COUNT; to++)
+    // 对最优的目标管子排序
+    deque<int> sort;
+    for (int i = 0; i < TUBES_COUNT; i++)
     {
+        if (!current.IsTubeEmpty(i) && current.IsAllSameBall(i))
+        {
+            sort.push_front(i);
+        }
+        else
+        {
+            sort.push_back(i);
+        }
+    }
+
+
+    for (int i = 0; i < TUBES_COUNT; i++)
+    {
+        int to = sort.front();
         for (int from = 0; from < TUBES_COUNT; from++)
         {
-            // 如果管子全都是一个颜色，则不需要往别的管子移动，
             
             if (SearchStateOnAction(states, current, from, to))
             {
                 return true;
             }
         }
+        sort.pop_front();
     }
 
     return false;

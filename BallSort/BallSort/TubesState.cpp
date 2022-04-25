@@ -22,7 +22,7 @@ TubesState::TubesState(const int (*tubes)[4])
 TubesState::TubesState(const TubesState& state)
 {
 	SetTubes(state.balls_s);
-	SetAction(-1, -1, -1);
+	SetAction(state.curAction.ball, state.curAction.from, state.curAction.to);
 }
 
 TubesState& TubesState::operator=(const TubesState& state)
@@ -72,12 +72,17 @@ bool TubesState::CanTakeDumpAction(int from, int to)
 	assert((from >= 0) && from < TUBES_COUNT);
 	assert((to >= 0) && to < TUBES_COUNT);
 
-	if (IsTubeComplete(from) || IsTubeComplete(to))
+	if (from == to || IsTubeComplete(from) || IsTubeComplete(to))
 	{
 		return false;
 	}
 
-	if ((from != to) && !IsTubeEmpty(from) && !IsTubeFull(to) )
+	if (IsAllSameBall(from) && IsTubeEmpty(to))
+	{
+		return false;
+	}
+
+	if ( !IsTubeEmpty(from) && !IsTubeFull(to) )
 	{
 		if (IsSameTop(from, to) || IsTubeEmpty(to))
 		{
@@ -126,6 +131,20 @@ bool TubesState::IsTubeComplete(int tube)
 	return bottomValue != 0;
 }
 
+bool TubesState::IsAllSameBall(int tube)
+{
+	int topIndex = GetTopBallIndex(tube);
+	for (int i = 0; i < topIndex; i++)
+	{
+		if (this->balls_s[tube][i] != this->balls_s[tube][topIndex])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int TubesState::GetTopBallValue(int tube)
 {
 	assert((tube >= 0) && (tube < TUBES_COUNT));
@@ -137,7 +156,7 @@ int TubesState::GetTopBallValue(int tube)
 			return this->balls_s[tube][i];
 		}
 	}
-	return 0;
+	return -1;
 }
 
 int TubesState::GetTopBallIndex(int tube)
@@ -161,7 +180,7 @@ void TubesState::PrintStates()
 	{
 		for (int i = 0; i < TUBES_COUNT; i++)
 		{
-			std::cout << balls_s[i][j] << " ";
+			std::cout<< "  " << balls_s[i][j] << "  ";
 		}
 		std::cout << std::endl;
 	}
@@ -222,21 +241,27 @@ bool TubesState::DumpBall(int from, int to, TubesState& next)
 int TubesState::GetSameBalls(int tube)
 {
 	int topBallIndex = 0;
+	int topBallValue = -1;
 	int balls = 1;
 	for (int i = BALL_COUNT - 1; i >= 0; i--)
 	{
 		if (this->balls_s[tube][i] != 0)
 		{
 			topBallIndex = i;
-			//break;
+			topBallValue = this->balls_s[tube][i];
+			break;
 		}
 	}
 	
 	for (int i = topBallIndex - 1; i >= 0; i--)
 	{
-		if (this->balls_s[tube][i] == topBallIndex)
+		if (this->balls_s[tube][i] == topBallValue)
 		{
 			balls++;
+		}
+		else
+		{
+			break;
 		}
 	}
 
